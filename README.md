@@ -8,7 +8,7 @@ First install Typhoeus:
     
 Then make a ruby script or run from irb:
 
-    require 'learna'
+    require File.join(File.dirname(__FILE__), 'lerna', 'lerna.rb')
     Lerna.new("http://test.mysite.com").run
     
 You can pass options to Lerna for more complex tests:

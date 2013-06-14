@@ -32,3 +32,7 @@ Specifying a log file will silence terminal output and print to a chosen file lo
 You can follow the ouput using tail:
 
     tail -f lerna.log
+    
+To completely silence all terminal or log file output, pass in the silent option to Lerna.new:
+
+    Lerna.new("http://test.mysite.com", silent: true).run

@@ -1,14 +1,15 @@
 require 'typhoeus'
 
 class Lerna
-	attr_accessor :urls, :concurrency, :hydra, :url_options, :number_of_requests, :log_file
+	attr_accessor :urls, :options, :hydra, :concurrency, :url_options, :number_of_requests, :log_file
 
 	def initialize(urls, options={})
 		@urls = urls
-		@concurrency = options[:concurrency] || 10
-		@url_options = options[:url_options] || {}
-		@number_of_requests = options[:number_of_requests] || 1
-		@hydra = Typhoeus::Hydra.new(max_concurrency: @concurrency)
+		@options = options
+		@concurrency = @options[:concurrency] || 10
+		@url_options = @options[:url_options] || {}
+		@number_of_requests = @options[:number_of_requests] || 1
+		@hydra = Typhoeus::Hydra.new(max_concurrency: @concurrency * @number_of_requests)
 		set_up_queue(@urls)
 	end
 
@@ -46,6 +47,7 @@ class Lerna
 	end
 
 	def log(text, silent=true)
+		return false if @options[:silent] == true
 		if @log_file
 			f = File.open(@log_file, 'a')
 			f.puts(text)

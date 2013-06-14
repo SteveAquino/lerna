@@ -57,17 +57,3 @@ class Lerna
 		end
 	end
 end
-
-urls = %w(
-	http://staging.gopro.com
-	http://staging.gopro.com/support
-)
-
-options = {
-	userpwd: "admin:test",
-	followlocation: true
-}
-
-lerna = Lerna.new(urls, url_options: options, concurrency: 100, number_of_requests: 10)
-lerna.log_file = 'lerna.log'
-lerna.run

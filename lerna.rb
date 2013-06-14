@@ -1,20 +1,19 @@
 require 'typhoeus'
 
 class Lerna
-	attr_accessor :urls, :concurrency, :hydra, :url_options, :number_of_requests, :max_concurrency, :log_file
+	attr_accessor :urls, :concurrency, :hydra, :url_options, :number_of_requests, :log_file
 
 	def initialize(urls, options={})
 		@urls = urls
 		@concurrency = options[:concurrency] || 10
 		@url_options = options[:url_options] || {}
 		@number_of_requests = options[:number_of_requests] || 1
-		@max_concurrency = @concurrency * @number_of_requests
-		@hydra = Typhoeus::Hydra.new(max_concurrency: @max_concurrency)
+		@hydra = Typhoeus::Hydra.new(max_concurrency: @concurrency)
 		set_up_queue(@urls)
 	end
 
 	def set_up_queue(urls)
-		@number_of_requests.times do
+		@concurrency.times do
 			urls.each { |url| @hydra.queue new_request(url) }
 		end
 	end
@@ -22,18 +21,18 @@ class Lerna
 	def new_request(url)
 	  request = Typhoeus::Request.new(url, @url_options)
 	  parallel_requests = []
-	  @concurrency.times do |i|
+	  @number_of_requests.times do |i|
 			parallel_requests[i] = request.dup
 		  parallel_requests[i].on_complete do |response|
-		  	time = response.total_time.round(2)
+		  	time = sprintf("%.2f", response.total_time).to_f
 			  log("#{url} ====> HTTP #{response.code} #{response.status_message} in #{time} seconds", false)
-			  if response.success? && (i+1 < @concurrency)
+			  if (i+1 < @number_of_requests)
 					hydra.queue(parallel_requests[i+1])
 			  end
 		  end
 	  end
 	  request.on_complete do |response|
-	  	time = response.total_time.round(2)
+	  	time = sprintf("%.2f", response.total_time).to_f
 		  log("#{url} ====> HTTP #{response.code} #{response.status_message} in #{time} seconds", false)
 		  if response.success?
 				hydra.queue(parallel_requests[0])
